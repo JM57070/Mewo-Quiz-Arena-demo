@@ -7,27 +7,33 @@ on:
 permissions:
   contents: write
 
+# Toutes les commandes s'exécutent dans le sous-dossier du projet Flutter
+defaults:
+  run:
+    working-directory: ./Mewo-Quiz-arena-master
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Install Flutter
+      - name: Setup Flutter (stable)
         uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      - name: Install dependencies
+      - name: Flutter pub get
         run: flutter pub get
 
       - name: Build Flutter web
         run: flutter build web --release --web-renderer html --base-href "/Mewo-Quiz-Arena-demo/"
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages (gh-pages)
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
+          publish_dir: ./Mewo-Quiz-arena-master/build/web
           publish_branch: gh-pages
