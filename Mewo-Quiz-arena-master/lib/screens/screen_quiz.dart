@@ -1,18 +1,21 @@
-//QUIZ INTERACTIF 
+
+// QUIZ INTERACTIF 
 // 15 questions  •  3 niveaux  •  Animations engageantes
 // Flow : Level Intro → (Synopsis) → Question → ... → Results
+
 
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../widgets/futuristic_background.dart';
+import '../widgets/quiz_character.dart';
 import '../models/quiz_question.dart';
 import '../models/answer_record.dart';
 import 'screen_results.dart';
 
-// Phases du quiz
+//  Phases du quiz 
 enum QuizPhase { levelIntro, synopsis, question }
 
-// Config visuelle par niveau
+//  Config visuelle par niveau 
 class _LevelConfig {
   final String levelName;
   final String subtitle;
@@ -70,24 +73,24 @@ class ScreenQuiz extends StatefulWidget {
 
 class _ScreenQuizState extends State<ScreenQuiz>
     with SingleTickerProviderStateMixin {
-  // État du quiz
+  //  État du quiz 
   QuizPhase _phase = QuizPhase.levelIntro;
   int _currentLevel = 1;
   int _currentQuestionIndex = 0;
   String? _selectedAnswer;
   final List<AnswerRecord> _allAnswers = [];
 
-  // Typewriter
+  //  Typewriter 
   String _displayedText = '';
   bool _isTyping = false;
   Timer? _typingTimer;
 
-  // Animation d'apparition
+  //  Animation d'apparition 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
 
-  // Constantes
+  //  Constantes 
   static const int _totalQuestions = 15;
   int get _totalAnswered => _allAnswers.length;
 
@@ -129,7 +132,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
   }
 
   
-  // Navigation entre phases
+  //  Navigation entre phases 
 
   void _startLevelIntro() {
     setState(() {
@@ -166,7 +169,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
     _startTypewriter(_currentQuestion.question);
   }
 
-  // Typewriter effect
+  //  Typewriter effect 
   void _startTypewriter(String text, {int speedMs = 22}) {
     _typingTimer?.cancel();
     int index = 0;
@@ -194,21 +197,21 @@ class _ScreenQuizState extends State<ScreenQuiz>
     });
   }
 
-  // Sélectionner une réponse
+  //  Sélectionner une réponse 
   void _selectAnswer(String letter) {
     if (_isTyping) return;
     setState(() => _selectedAnswer = letter);
   }
 
-  // Action principale : avancer
+  //  Action principale : avancer 
   void _goNext() {
-    // Intro niveau → démarrer la 1ère question
+    //  Intro niveau → démarrer la 1ère question 
     if (_phase == QuizPhase.levelIntro) {
       _startQuestion();
       return;
     }
 
-    // Synopsis → afficher la question
+    //  Synopsis → afficher la question 
     if (_phase == QuizPhase.synopsis) {
       if (_isTyping) {
         _skipTypewriter(_currentQuestion.synopsis!);
@@ -218,13 +221,13 @@ class _ScreenQuizState extends State<ScreenQuiz>
       return;
     }
 
-    // Question : skip typewriter
+    //  Question : skip typewriter 
     if (_isTyping) {
       _skipTypewriter(_currentQuestion.question);
       return;
     }
 
-    // Question : valider la réponse
+    //  Question : valider la réponse 
     if (_selectedAnswer == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -247,7 +250,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
       return;
     }
 
-    // Enregistrer la réponse
+    //  Enregistrer la réponse 
     final q = _currentQuestion;
     final selected = q.reponses.firstWhere((r) => r.letter == _selectedAnswer);
     _allAnswers.add(AnswerRecord(
@@ -261,14 +264,14 @@ class _ScreenQuizState extends State<ScreenQuiz>
         _currentQuestionIndex >= _currentQuestions.length - 1;
 
     if (!isLastQuestion) {
-      // Prochaine question du même niveau
+      //  Prochaine question du même niveau 
       setState(() {
         _currentQuestionIndex++;
         _selectedAnswer = null;
       });
       _startQuestion();
     } else if (_currentLevel < 3) {
-      // Passer au niveau suivant
+      //  Passer au niveau suivant 
       setState(() {
         _currentLevel++;
         _currentQuestionIndex = 0;
@@ -276,7 +279,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
       });
       _startLevelIntro();
     } else {
-      // Fin du quiz → écran résultats
+      //  Fin du quiz → écran résultats 
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
@@ -288,6 +291,9 @@ class _ScreenQuizState extends State<ScreenQuiz>
       );
     }
   }
+
+  
+  //  BUILD 
 
   @override
   Widget build(BuildContext context) {
@@ -317,7 +323,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
   }
 
   
-  // ÉCRAN : INTRO NIVEAU
+  //  ÉCRAN : INTRO NIVEAU 
 
   Widget _buildLevelIntro() {
     return GestureDetector(
@@ -328,7 +334,6 @@ class _ScreenQuizState extends State<ScreenQuiz>
           const Spacer(),
 
           // Badge niveau
-
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
             decoration: BoxDecoration(
@@ -353,7 +358,6 @@ class _ScreenQuizState extends State<ScreenQuiz>
           const SizedBox(height: 20),
 
           // Grand titre
-
           Text(
             _config.subtitle,
             textAlign: TextAlign.center,
@@ -411,7 +415,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
   }
 
   
-  // ÉCRAN : SYNOPSIS
+  //  ÉCRAN : SYNOPSIS 
 
   Widget _buildSynopsis() {
     return GestureDetector(
@@ -436,11 +440,21 @@ class _ScreenQuizState extends State<ScreenQuiz>
             ),
           ),
 
-          // Carte synopsis 
+          // Carte synopsis + personnage animé
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Container(
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Personnage animé (niveaux 2 & 3)
+                  QuizCharacter(
+                    level: _currentLevel,
+                    questionIndex: _currentQuestionIndex,
+                    primaryColor: _config.primary,
+                  ),
+                  // Carte synopsis
+                  Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
@@ -516,6 +530,8 @@ class _ScreenQuizState extends State<ScreenQuiz>
                   ],
                 ),
               ),
+                ],
+              ),
             ),
           ),
 
@@ -539,7 +555,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
   }
 
   
-  // ÉCRAN : QUESTION
+  //  ÉCRAN : QUESTION 
 
   Widget _buildQuestion() {
     final question = _currentQuestion;
@@ -548,7 +564,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
       children: [
         _buildProgressBar(),
 
-        // En-tête
+        //  En-tête 
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
@@ -607,7 +623,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
           ),
         ),
 
-        // Texte de la question
+        //  Texte de la question 
         GestureDetector(
           onTap: () {
             if (_isTyping) _skipTypewriter(question.question);
@@ -650,7 +666,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
           ),
         ),
 
-        // Réponses
+        //  Réponses 
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -660,7 +676,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
           ),
         ),
 
-        // Footer : détecter + bouton
+        //  Footer : détecter + bouton 
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -727,7 +743,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
   }
 
   
-  // Boîte de réponse
+  //  Boîte de réponse 
 
   Widget _buildAnswerBox(QuizAnswer answer) {
     final isSelected = _selectedAnswer == answer.letter;
@@ -831,7 +847,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
   }
 
   
-  // Barre de progression
+  //  Barre de progression 
 
   Widget _buildProgressBar() {
     final progress = _totalAnswered / _totalQuestions;
@@ -876,7 +892,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
 }
 
 
-// Widgets utilitaires
+//  Widgets utilitaires 
 
 /// Badge "NIVEAU X · Q Y/5"
 class _LevelBadge extends StatelessWidget {
