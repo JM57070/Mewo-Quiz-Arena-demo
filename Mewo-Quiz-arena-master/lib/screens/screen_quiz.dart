@@ -1,28 +1,34 @@
 // ============================================================
-// screens/screen_quiz.dart — ENTONNOIR DYNAMIQUE v3
+// screens/screen_quiz.dart — ENTONNOIR FULL DYNAMIQUE v4
 // ============================================================
 //
-// MODIFICATION PRINCIPALE v3 :
+//  MODIFICATIONS v4 vs v3 :
 //
-//   ENTONNOIR DYNAMIQUE N3 :
-//   - Ajout de _dominantPole (String) — calculé après N2
-//   - Ajout de _dynamicN3Questions (List) — initialisé vide,
-//     rempli au moment de la transition N2 → N3
-//   - _currentQuestions en N3 retourne _dynamicN3Questions
-//     au lieu de l'ancien questionsNiveau3 unique
-//   - _computeAndRoutePole() appelé dans _goNext()
-//     quand on termine N2 — détermine le pôle et charge
-//     le bon jeu de questions N3 via getQuestionsNiveau3(pole)
+//  1. ENTONNOIR DÉMARRÉ DÈS LE NIVEAU 2
+//     → N2 n'est plus un jeu générique (tech/humain)
+//     → N2 est spécifique au pôle détecté en N1
+//     → getQuestionsNiveau2(pole) chargé à la transition N1→N2
 //
-//   _levelConfigs (N3) :
-//   - subtitle et introText s'adaptent selon _dominantPole
-//     → _getN3Config() retourne un _LevelConfig dynamique
+//  2. N3 ADAPTÉ AU PÔLE + GROUPE MÉTIER
+//     → computeMetierGroup(answers, pole) calculé après N2
+//     → getQuestionsNiveau3(pole, metierGroup) chargé à N2→N3
 //
-//   Inchangé :
-//   - Toute la logique N1 et N2
-//   - Layout grille 2×2 pour N1
-//   - Animations, typewriter, synopsis, personnages
-//   - Barre de progression, bouton suivant, widgets utilitaires
+//  3. NOUVELLES VARIABLES D'ÉTAT
+//     → _dominantPole   : String — calculé fin N1
+//     → _metierGroup    : String — calculé fin N2
+//     → _dynamicN2Questions : List — chargé à transition N1→N2
+//     → _dynamicN3Questions : List — chargé à transition N2→N3
+//
+//  4. CONFIGS VISUELLES DYNAMIQUES
+//     → _getN2Config(pole)           — N2 coloré selon le pôle
+//     → _getN3Config(pole, groupe)   — N3 coloré + texte précis
+//
+//  5. CONSERVATION COMPLÈTE
+//     → Layout grille 2×2 N1 (4 réponses ABCD)
+//     → Liste verticale N2/N3 (2 réponses AB)
+//     → Typewriter, synopsis, personnages, animations
+//     → Barre de progression, bouton suivant
+//
 // ============================================================
 
 import 'package:flutter/material.dart';
@@ -51,7 +57,7 @@ class _LevelConfig {
   });
 }
 
-// ── Configs N1 et N2 (fixes) ─────────────────────────────────
+// ── Config N1 (fixe) ─────────────────────────────────────────
 const _LevelConfig _configN1 = _LevelConfig(
   levelName: 'NIVEAU 1',
   subtitle: 'DÉCOUVERTE',
@@ -62,79 +68,195 @@ const _LevelConfig _configN1 = _LevelConfig(
   secondary: Color(0xFF80DEEA),
 );
 
-const _LevelConfig _configN2 = _LevelConfig(
-  levelName: 'NIVEAU 2',
-  subtitle: 'STAGE',
-  introText:
-      'Tu viens d\'arriver dans une structure inconnue.\n'
-      'L\'équipe t\'observe. Tes choix parlent pour toi.\n'
-      'Deux univers coexistent ici. Lequel va t\'attirer ?',
-  primary: Color(0xFF259AB3),
-  secondary: Color(0xFF8ac1d0),
-);
-
-// ── Config N3 dynamique selon pôle ───────────────────────────
-_LevelConfig _getN3Config(String pole) {
+// ── Config N2 dynamique selon le pôle détecté ────────────────
+_LevelConfig _getN2Config(String pole) {
   switch (pole) {
     case 'info':
       return const _LevelConfig(
-        levelName: 'NIVEAU 3',
+        levelName: 'NIVEAU 2',
         subtitle: 'INFORMATIQUE',
         introText:
-            'Ton univers : le numérique.\n'
-            'Mais deux chemins s\'ouvrent :\n'
-            'l\'infrastructure et la sécurité… ou le développement et la conception.\n'
-            'Réponds à l\'instinct.',
+            'Ton pôle : l\'informatique. 💻\n'
+            'Deux grandes voies s\'ouvrent dans ce domaine :\n'
+            'l\'infrastructure, les réseaux et la sécurité —\n'
+            'ou le développement logiciel et la conception.\n'
+            'Ces cinq questions vont affiner ta direction.',
         primary: Color(0xFF0097A7),
         secondary: Color(0xFF80DEEA),
       );
     case 'sante':
       return const _LevelConfig(
-        levelName: 'NIVEAU 3',
+        levelName: 'NIVEAU 2',
         subtitle: 'SANTÉ',
         introText:
-            'Ton univers : le soin et la santé.\n'
-            'Deux voies se précisent :\n'
-            'le soin direct au quotidien… ou l\'expertise médicale spécialisée.\n'
-            'Lequel te ressemble vraiment ?',
+            'Ton pôle : la santé et le soin. 🏥\n'
+            'Deux directions se dessinent :\n'
+            'le contact direct avec les patients au quotidien —\n'
+            'ou l\'expertise médicale en consultation spécialisée.\n'
+            'Ces cinq questions vont préciser ta vocation.',
         primary: Color(0xFFC2185B),
         secondary: Color(0xFFF48FB1),
       );
     case 'animal':
       return const _LevelConfig(
-        levelName: 'NIVEAU 3',
+        levelName: 'NIVEAU 2',
         subtitle: 'ANIMAL',
         introText:
-            'Ton univers : le monde animal.\n'
-            'Deux rôles t\'attendent :\n'
-            'les soins cliniques en cabinet… ou la gestion et l\'accueil en structure.\n'
-            'Lequel t\'appelle ?',
+            'Ton pôle : le monde animal. 🐾\n'
+            'Deux rôles distincts t\'attendent :\n'
+            'les soins cliniques en cabinet vétérinaire —\n'
+            'ou la gestion et le management en structure animalière.\n'
+            'Ces cinq questions vont identifier le tien.',
         primary: Color(0xFF33691E),
         secondary: Color(0xFFA5D6A7),
       );
     case 'juridique':
       return const _LevelConfig(
-        levelName: 'NIVEAU 3',
+        levelName: 'NIVEAU 2',
         subtitle: 'JURIDIQUE',
         introText:
-            'Ton univers : le droit et la rigueur.\n'
-            'Deux directions se dessinent :\n'
-            'la rédaction et les dossiers… ou le conseil et la relation client.\n'
-            'Lequel est vraiment toi ?',
+            'Ton pôle : le droit et la rigueur. ⚖️\n'
+            'Deux facettes du métier juridique :\n'
+            'la rédaction d\'actes et la gestion de dossiers —\n'
+            'ou le conseil, l\'accompagnement et la relation client.\n'
+            'Ces cinq questions vont te situer.',
         primary: Color(0xFFBF360C),
         secondary: Color(0xFFFFAB91),
       );
     case 'service':
     default:
       return const _LevelConfig(
-        levelName: 'NIVEAU 3',
+        levelName: 'NIVEAU 2',
         subtitle: 'SERVICE',
         introText:
-            'Ton univers : le service et la relation humaine.\n'
-            'Deux chemins s\'ouvrent :\n'
-            'l\'accompagnement de la petite enfance… ou la relation client à distance.\n'
-            'Écoute ton instinct.',
+            'Ton pôle : les enfants et les familles. 🤝\n'
+            'Deux univers très différents dans ce secteur :\n'
+            'les tout-petits et la petite enfance (0-3 ans) —\n'
+            'ou l\'animation périscolaire avec des groupes d\'enfants.\n'
+            'Ces cinq questions vont affiner ton univers.',
         primary: Color(0xFF1A237E),
+        secondary: Color(0xFF9FA8DA),
+      );
+  }
+}
+
+// ── Config N3 dynamique selon pôle + groupe métier ───────────
+_LevelConfig _getN3Config(String pole, String metierGroup) {
+  final key = '${pole}_$metierGroup';
+  switch (key) {
+    case 'info_terrain':
+      return const _LevelConfig(
+        levelName: 'NIVEAU 3',
+        subtitle: 'INFRA & RÉSEAU',
+        introText:
+            'Direction confirmée : Infrastructure, Réseaux, Sécurité. 🔒\n'
+            'Une dernière question à trancher :\n'
+            'opérationnel·le sur le terrain dès le Bac ou BTS —\n'
+            'ou expert·e spécialisé·e après une Licence ou un Master ?',
+        primary: Color(0xFF00897B),
+        secondary: Color(0xFF80CBC4),
+      );
+    case 'info_dev':
+      return const _LevelConfig(
+        levelName: 'NIVEAU 3',
+        subtitle: 'DEV & CONCEPTION',
+        introText:
+            'Direction confirmée : Développement et Conception logicielle. 🧑‍💻\n'
+            'Une dernière question à trancher :\n'
+            'développeur·se opérationnel·le (BTS SIO ou Licence) —\n'
+            'ou expert·e en architecture logicielle (Master) ?',
+        primary: Color(0xFF1565C0),
+        secondary: Color(0xFF90CAF9),
+      );
+    case 'sante_contact':
+      return const _LevelConfig(
+        levelName: 'NIVEAU 3',
+        subtitle: 'SOIN & PRÉSENCE',
+        introText:
+            'Direction confirmée : contact et présence au quotidien. 🩺\n'
+            'Deux métiers distincts dans cette direction :\n'
+            'aide-soignant·e — soins d\'hygiène et de confort directs —\n'
+            'ou secrétaire médicale — accueil et gestion administrative.',
+        primary: Color(0xFFC2185B),
+        secondary: Color(0xFFF48FB1),
+      );
+    case 'sante_expertise':
+      return const _LevelConfig(
+        levelName: 'NIVEAU 3',
+        subtitle: 'EXPERTISE MÉDICALE',
+        introText:
+            'Direction confirmée : expertise médicale spécialisée. 🔬\n'
+            'Deux spécialités très différentes :\n'
+            'diététicien·ne — nutrition, alimentation, maladies métaboliques —\n'
+            'ou opticien·ne lunettier — vision, yeux, lunettes et lentilles.',
+        primary: Color(0xFF6A1B9A),
+        secondary: Color(0xFFCE93D8),
+      );
+    case 'animal_clinique':
+      return const _LevelConfig(
+        levelName: 'NIVEAU 3',
+        subtitle: 'SOINS VÉTÉRINAIRES',
+        introText:
+            'Direction confirmée : soins cliniques en cabinet vétérinaire. 🐕\n'
+            'Ces cinq questions vont préciser ta spécialisation\n'
+            'dans le métier d\'auxiliaire vétérinaire.',
+        primary: Color(0xFF2E7D32),
+        secondary: Color(0xFFA5D6A7),
+      );
+    case 'animal_gestion':
+      return const _LevelConfig(
+        levelName: 'NIVEAU 3',
+        subtitle: 'GESTION ANIMALIÈRE',
+        introText:
+            'Direction confirmée : gestion et management en structure animalière. 🏥\n'
+            'Ces cinq questions vont préciser ton profil\n'
+            'en tant que chargé·e de gestion animalière.',
+        primary: Color(0xFF33691E),
+        secondary: Color(0xFFA5D6A7),
+      );
+    case 'juridique_redaction':
+      return const _LevelConfig(
+        levelName: 'NIVEAU 3',
+        subtitle: 'ASSISTANT JURIDIQUE',
+        introText:
+            'Direction confirmée : rédaction et gestion documentaire juridique. 📋\n'
+            'Ces cinq questions vont confirmer ton profil\n'
+            'd\'assistant·e juridique et affiner ta spécialisation.',
+        primary: Color(0xFFBF360C),
+        secondary: Color(0xFFFFAB91),
+      );
+    case 'juridique_conseil':
+      return const _LevelConfig(
+        levelName: 'NIVEAU 3',
+        subtitle: 'COLLABORATEUR JURISTE',
+        introText:
+            'Direction confirmée : conseil et relation client juridique. 🤝\n'
+            'Ces cinq questions vont confirmer ton profil\n'
+            'de collaborateur·trice juriste notarial·e.',
+        primary: Color(0xFFE65100),
+        secondary: Color(0xFFFFCC80),
+      );
+    case 'service_enfance':
+      return const _LevelConfig(
+        levelName: 'NIVEAU 3',
+        subtitle: 'PETITE ENFANCE',
+        introText:
+            'Direction confirmée : la petite enfance et les familles. 👶\n'
+            'Ces cinq questions vont préciser ton métier\n'
+            'parmi les quatre possibles du CAP AEPE.',
+        primary: Color(0xFF1A237E),
+        secondary: Color(0xFF9FA8DA),
+      );
+    case 'service_animation':
+    default:
+      return const _LevelConfig(
+        levelName: 'NIVEAU 3',
+        subtitle: 'ANIMATION PÉRISCOLAIRE',
+        introText:
+            'Direction confirmée : animation et accompagnement éducatif. 🎨\n'
+            'Ces cinq questions vont préciser ta spécialisation\n'
+            'dans le secteur périscolaire et éducatif.',
+        primary: Color(0xFF283593),
         secondary: Color(0xFF9FA8DA),
       );
   }
@@ -143,7 +265,6 @@ _LevelConfig _getN3Config(String pole) {
 // ============================================================
 class ScreenQuiz extends StatefulWidget {
   const ScreenQuiz({super.key});
-
   @override
   State<ScreenQuiz> createState() => _ScreenQuizState();
 }
@@ -157,9 +278,11 @@ class _ScreenQuizState extends State<ScreenQuiz>
   String? _selectedAnswer;
   final List<AnswerRecord> _allAnswers = [];
 
-  // ── ENTONNOIR : pôle calculé après N2 ────────────────────
-  String _dominantPole = 'info';           // défaut
-  List<QuizQuestion> _dynamicN3Questions = const [];  // rempli à transition N2→N3
+  // ── ENTONNOIR : variables de routage dynamique ────────────
+  String _dominantPole   = 'info';      // calculé à fin N1
+  String _metierGroup    = 'terrain';   // calculé à fin N2
+  List<QuizQuestion> _dynamicN2Questions = const [];  // chargé à N1→N2
+  List<QuizQuestion> _dynamicN3Questions = const [];  // chargé à N2→N3
 
   String _displayedText = '';
   bool _isTyping = false;
@@ -172,14 +295,16 @@ class _ScreenQuizState extends State<ScreenQuiz>
   static const int _totalQuestions = 15;
   int get _totalAnswered => _allAnswers.length;
 
-  // ── Sélection dynamique des questions selon niveau et pôle ─
+  // ── Questions du niveau courant ──────────────────────────
   List<QuizQuestion> get _currentQuestions {
     switch (_currentLevel) {
       case 1: return questionsNiveau1;
-      case 2: return questionsNiveau2;
+      case 2: return _dynamicN2Questions.isNotEmpty
+                   ? _dynamicN2Questions
+                   : getQuestionsNiveau2(_dominantPole);
       case 3: return _dynamicN3Questions.isNotEmpty
-                  ? _dynamicN3Questions
-                  : getQuestionsNiveau3(_dominantPole);
+                   ? _dynamicN3Questions
+                   : getQuestionsNiveau3(_dominantPole, _metierGroup);
       default: return questionsNiveau1;
     }
   }
@@ -187,29 +312,27 @@ class _ScreenQuizState extends State<ScreenQuiz>
   QuizQuestion get _currentQuestion =>
       _currentQuestions[_currentQuestionIndex];
 
-  // ── Config visuelle selon niveau (N3 dynamique) ───────────
+  // ── Config visuelle selon niveau + pôle + groupe ─────────
   _LevelConfig get _config {
     switch (_currentLevel) {
       case 1: return _configN1;
-      case 2: return _configN2;
-      case 3: return _getN3Config(_dominantPole);
+      case 2: return _getN2Config(_dominantPole);
+      case 3: return _getN3Config(_dominantPole, _metierGroup);
       default: return _configN1;
     }
   }
 
-  // ============================================================
   @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+      vsync: this, duration: const Duration(milliseconds: 500));
+    _fadeAnim = CurvedAnimation(
+        parent: _fadeController, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.15),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+      begin: const Offset(0, 0.15), end: Offset.zero,
+    ).animate(CurvedAnimation(
+        parent: _fadeController, curve: Curves.easeOut));
     _startLevelIntro();
   }
 
@@ -221,13 +344,25 @@ class _ScreenQuizState extends State<ScreenQuiz>
   }
 
   // ============================================================
+  // ── ENTONNOIR : calcul et routage ────────────────────────────
+
+  /// Appelé à la fin de N1 → calcule le pôle dominant et charge N2
+  void _computeAndRouteToN2() {
+    _dominantPole = computeDominantPole(_allAnswers);
+    _dynamicN2Questions = getQuestionsNiveau2(_dominantPole);
+  }
+
+  /// Appelé à la fin de N2 → calcule le groupe métier et charge N3
+  void _computeAndRouteToN3() {
+    _metierGroup = computeMetierGroup(_allAnswers, _dominantPole);
+    _dynamicN3Questions = getQuestionsNiveau3(_dominantPole, _metierGroup);
+  }
+
+  // ============================================================
   // ── Navigation ──────────────────────────────────────────────
 
   void _startLevelIntro() {
-    setState(() {
-      _phase = QuizPhase.levelIntro;
-      _selectedAnswer = null;
-    });
+    setState(() { _phase = QuizPhase.levelIntro; _selectedAnswer = null; });
     _fadeController.forward(from: 0);
   }
 
@@ -283,34 +418,16 @@ class _ScreenQuizState extends State<ScreenQuiz>
   }
 
   // ============================================================
-  // ENTONNOIR : calcul pôle et chargement N3 dynamique
-  // ============================================================
-  void _computeAndRouteToN3() {
-    // Calcule le pôle dominant à partir des réponses N1+N2 déjà enregistrées
-    _dominantPole = computeDominantPole(_allAnswers);
-    _dynamicN3Questions = getQuestionsNiveau3(_dominantPole);
-  }
-
-  // ============================================================
-  // ── Action principale ────────────────────────────────────────
+  // ── Action principale ─────────────────────────────────────
 
   void _goNext() {
-    if (_phase == QuizPhase.levelIntro) {
-      _startQuestion();
-      return;
-    }
+    if (_phase == QuizPhase.levelIntro) { _startQuestion(); return; }
     if (_phase == QuizPhase.synopsis) {
-      if (_isTyping) {
-        _skipTypewriter(_currentQuestion.synopsis!);
-      } else {
-        _showQuestion();
-      }
+      if (_isTyping) _skipTypewriter(_currentQuestion.synopsis!);
+      else _showQuestion();
       return;
     }
-    if (_isTyping) {
-      _skipTypewriter(_currentQuestion.question);
-      return;
-    }
+    if (_isTyping) { _skipTypewriter(_currentQuestion.question); return; }
 
     if (_selectedAnswer == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -328,7 +445,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
       return;
     }
 
-    // Enregistrement réponse
+    // Enregistrement de la réponse
     final q = _currentQuestion;
     final selected = q.reponses.firstWhere((r) => r.letter == _selectedAnswer);
     _allAnswers.add(AnswerRecord(
@@ -336,19 +453,21 @@ class _ScreenQuizState extends State<ScreenQuiz>
       questionNumero: q.numero,
       letter: selected.letter,
       profil: selected.profil,
-      pole: selected.pole,
+      pole: selected.pole,          // renseigné uniquement N1
     ));
 
-    final isLastQuestion = _currentQuestionIndex >= _currentQuestions.length - 1;
+    final isLastQuestion =
+        _currentQuestionIndex >= _currentQuestions.length - 1;
 
     if (!isLastQuestion) {
+      // Prochaine question du même niveau
       setState(() { _currentQuestionIndex++; _selectedAnswer = null; });
       _startQuestion();
     } else if (_currentLevel < 3) {
-      // ── ENTONNOIR : juste avant de passer au N3, on calcule le pôle ──
-      if (_currentLevel == 2) {
-        _computeAndRouteToN3();
-      }
+      // ── ENTONNOIR : transition de niveau ──────────────────
+      if (_currentLevel == 1) _computeAndRouteToN2();  // N1→N2
+      if (_currentLevel == 2) _computeAndRouteToN3();  // N2→N3
+
       setState(() {
         _currentLevel++;
         _currentQuestionIndex = 0;
@@ -356,10 +475,15 @@ class _ScreenQuizState extends State<ScreenQuiz>
       });
       _startLevelIntro();
     } else {
+      // Fin du quiz → résultats
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, anim, __) => ScreenResults(answers: _allAnswers),
+          pageBuilder: (_, anim, __) => ScreenResults(
+            answers: _allAnswers,
+            dominantPole: _dominantPole,
+            metierGroup: _metierGroup,
+          ),
           transitionsBuilder: (_, anim, __, child) =>
               FadeTransition(opacity: anim, child: child),
           transitionDuration: const Duration(milliseconds: 700),
@@ -412,7 +536,8 @@ class _ScreenQuizState extends State<ScreenQuiz>
             borderRadius: BorderRadius.circular(30),
             border: Border.all(color: _config.secondary, width: 2),
             color: _config.secondary.withValues(alpha: 0.12),
-            boxShadow: [BoxShadow(color: _config.secondary.withValues(alpha: 0.25), blurRadius: 12)],
+            boxShadow: [BoxShadow(
+                color: _config.secondary.withValues(alpha: 0.25), blurRadius: 12)],
           ),
           child: Text(_config.levelName,
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
@@ -438,7 +563,8 @@ class _ScreenQuizState extends State<ScreenQuiz>
               borderRadius: BorderRadius.circular(16),
               color: Colors.white.withValues(alpha: 0.07),
               border: Border.all(color: _config.primary.withValues(alpha: 0.35)),
-              boxShadow: [BoxShadow(color: _config.primary.withValues(alpha: 0.12), blurRadius: 20)],
+              boxShadow: [BoxShadow(
+                  color: _config.primary.withValues(alpha: 0.12), blurRadius: 20)],
             ),
             child: Text(_config.introText,
                 textAlign: TextAlign.center,
@@ -481,11 +607,15 @@ class _ScreenQuizState extends State<ScreenQuiz>
               ),
           ]),
         ),
-        Expanded(child: hasCharacter ? _buildSynopsisWithCharacter(character) : _buildSynopsisTextOnly()),
+        Expanded(child: hasCharacter
+            ? _buildSynopsisWithCharacter(character)
+            : _buildSynopsisTextOnly()),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          child: Text(_isTyping ? 'Appuyez pour passer...' : 'Appuyez pour la question →',
-              style: const TextStyle(color: Colors.white54, fontSize: 12, letterSpacing: 1.5)),
+          child: Text(
+              _isTyping ? 'Appuyez pour passer...' : 'Appuyez pour la question →',
+              style: const TextStyle(
+                  color: Colors.white54, fontSize: 12, letterSpacing: 1.5)),
         ),
       ]),
     );
@@ -507,13 +637,13 @@ class _ScreenQuizState extends State<ScreenQuiz>
   Widget _buildCharacterColumn(CharacterConfig character) {
     return Column(mainAxisAlignment: MainAxisAlignment.end, children: [
       _ReactionOverlay(
-        key: ValueKey('$_currentLevel-$_currentQuestionIndex-reaction'),
-        mood: character.mood, color: _config.primary),
+          key: ValueKey('$_currentLevel-$_currentQuestionIndex-reaction'),
+          mood: character.mood, color: _config.primary),
       const SizedBox(height: 4),
       QuizCharacter(
-        key: ValueKey('char-$_currentLevel-$_currentQuestionIndex'),
-        level: _currentLevel, questionIndex: _currentQuestionIndex,
-        primaryColor: _config.primary),
+          key: ValueKey('char-$_currentLevel-$_currentQuestionIndex'),
+          level: _currentLevel, questionIndex: _currentQuestionIndex,
+          primaryColor: _config.primary),
       const SizedBox(height: 8),
     ]);
   }
@@ -531,7 +661,8 @@ class _ScreenQuizState extends State<ScreenQuiz>
         borderRadius: BorderRadius.circular(16),
         color: Colors.white.withValues(alpha: 0.07),
         border: Border.all(color: _config.primary.withValues(alpha: 0.4), width: 1.5),
-        boxShadow: [BoxShadow(color: _config.primary.withValues(alpha: 0.15), blurRadius: 20)],
+        boxShadow: [BoxShadow(
+            color: _config.primary.withValues(alpha: 0.15), blurRadius: 20)],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -544,8 +675,11 @@ class _ScreenQuizState extends State<ScreenQuiz>
             color: _config.primary.withValues(alpha: 0.22)),
         Expanded(child: SingleChildScrollView(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(_displayedText, style: const TextStyle(fontSize: 13.5, color: Colors.white, height: 1.85)),
-            if (_isTyping) Text('▌', style: TextStyle(color: _config.secondary, fontSize: 15)),
+            Text(_displayedText,
+                style: const TextStyle(
+                    fontSize: 13.5, color: Colors.white, height: 1.85)),
+            if (_isTyping)
+              Text('▌', style: TextStyle(color: _config.secondary, fontSize: 15)),
           ],
         ))),
       ]),
@@ -557,8 +691,6 @@ class _ScreenQuizState extends State<ScreenQuiz>
     final question = _currentQuestion;
     return Column(children: [
       _buildProgressBar(),
-
-      // En-tête
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -566,25 +698,26 @@ class _ScreenQuizState extends State<ScreenQuiz>
           Transform.rotate(angle: -0.06,
             child: ShaderMask(
               shaderCallback: (bounds) => LinearGradient(
-                  colors: [_config.primary, _config.secondary]).createShader(bounds),
+                  colors: [_config.primary, _config.secondary])
+                  .createShader(bounds),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(_config.levelName, style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1)),
-                Text(_config.subtitle, style: const TextStyle(
-                    fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5)),
+                Text(_config.levelName,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900,
+                        color: Colors.white, letterSpacing: 1)),
+                Text(_config.subtitle,
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
+                        color: Colors.white, letterSpacing: 0.5)),
               ]),
             ),
           ),
           Text('Question ${_totalAnswered + 1}',
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Colors.white,
-                letterSpacing: 1, shadows: [
-                  Shadow(color: _config.primary.withValues(alpha: 0.8), blurRadius: 14),
-                  const Shadow(color: Colors.black87, offset: Offset(1, 1)),
-                ])),
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900,
+                  color: Colors.white, letterSpacing: 1, shadows: [
+                    Shadow(color: _config.primary.withValues(alpha: 0.8), blurRadius: 14),
+                    const Shadow(color: Colors.black87, offset: Offset(1, 1)),
+                  ])),
         ]),
       ),
-
-      // Texte question
       GestureDetector(
         onTap: () { if (_isTyping) _skipTypewriter(question.question); },
         child: Container(
@@ -592,8 +725,11 @@ class _ScreenQuizState extends State<ScreenQuiz>
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
-                colors: [Colors.black.withValues(alpha: 0.45), _config.primary.withValues(alpha: 0.08)]),
+            gradient: LinearGradient(begin: Alignment.topLeft,
+                end: Alignment.bottomRight, colors: [
+                  Colors.black.withValues(alpha: 0.45),
+                  _config.primary.withValues(alpha: 0.08),
+                ]),
             border: Border.all(color: _config.primary.withValues(alpha: 0.3)),
           ),
           child: Column(children: [
@@ -601,28 +737,24 @@ class _ScreenQuizState extends State<ScreenQuiz>
                 style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold,
                     color: Colors.white, height: 1.55,
                     shadows: [Shadow(color: Colors.black54, blurRadius: 3)])),
-            if (_isTyping) Text('▌', style: TextStyle(color: _config.secondary, fontSize: 17)),
+            if (_isTyping)
+              Text('▌', style: TextStyle(color: _config.secondary, fontSize: 17)),
           ]),
         ),
       ),
-
-      // Réponses — grille 2×2 pour N1, liste pour N2/N3
       Expanded(child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: _currentLevel == 1
             ? _buildAnswersGrid(question)
             : _buildAnswersList(question),
       )),
-
-      // Footer discret
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Text('Détecte : ${question.detecte}',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 10, fontStyle: FontStyle.italic, color: Colors.white38)),
+            style: const TextStyle(
+                fontSize: 10, fontStyle: FontStyle.italic, color: Colors.white38)),
       ),
-
-      // Bouton suivant
       Padding(
         padding: const EdgeInsets.only(right: 16, bottom: 14, top: 8),
         child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -634,17 +766,20 @@ class _ScreenQuizState extends State<ScreenQuiz>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                    color: _selectedAnswer != null ? _config.secondary : Colors.white30, width: 2),
+                    color: _selectedAnswer != null
+                        ? _config.secondary : Colors.white30, width: 2),
                 color: _selectedAnswer != null
                     ? _config.secondary.withValues(alpha: 0.2)
                     : Colors.white.withValues(alpha: 0.04),
                 boxShadow: _selectedAnswer != null
-                    ? [BoxShadow(color: _config.secondary.withValues(alpha: 0.4), blurRadius: 14)]
+                    ? [BoxShadow(
+                    color: _config.secondary.withValues(alpha: 0.4), blurRadius: 14)]
                     : [],
               ),
               child: Text('Suivant  →',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,
-                      color: _selectedAnswer != null ? _config.secondary : Colors.white30)),
+                      color: _selectedAnswer != null
+                          ? _config.secondary : Colors.white30)),
             ),
           ),
         ]),
@@ -652,19 +787,27 @@ class _ScreenQuizState extends State<ScreenQuiz>
     ]);
   }
 
-  // ── Grille 2×2 (N1 — 4 réponses) ────────────────────────────
+  // ── Grille 2×2 (N1 — 4 réponses ABCD) ──────────────────────
   Widget _buildAnswersGrid(QuizQuestion question) {
     final r = question.reponses;
     return Column(children: [
       const SizedBox(height: 6),
-      Row(children: [Expanded(child: _buildAnswerBox(r[0])), const SizedBox(width: 10), Expanded(child: _buildAnswerBox(r[1]))]),
+      Row(children: [
+        Expanded(child: _buildAnswerBox(r[0])),
+        const SizedBox(width: 10),
+        Expanded(child: _buildAnswerBox(r[1])),
+      ]),
       const SizedBox(height: 10),
-      Row(children: [Expanded(child: _buildAnswerBox(r[2])), const SizedBox(width: 10), Expanded(child: _buildAnswerBox(r[3]))]),
+      Row(children: [
+        Expanded(child: _buildAnswerBox(r[2])),
+        const SizedBox(width: 10),
+        Expanded(child: _buildAnswerBox(r[3])),
+      ]),
       const SizedBox(height: 6),
     ]);
   }
 
-  // ── Liste verticale (N2/N3 — 2 réponses) ────────────────────
+  // ── Liste verticale (N2/N3 — 2 réponses AB) ─────────────────
   Widget _buildAnswersList(QuizQuestion question) {
     return Column(children: question.reponses.map(_buildAnswerBox).toList());
   }
@@ -680,12 +823,16 @@ class _ScreenQuizState extends State<ScreenQuiz>
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: isSelected ? _config.primary.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.065),
+          color: isSelected
+              ? _config.primary.withValues(alpha: 0.22)
+              : Colors.white.withValues(alpha: 0.065),
           border: Border.all(
-              color: isSelected ? _config.primary : Colors.white.withValues(alpha: 0.22),
+              color: isSelected
+                  ? _config.primary : Colors.white.withValues(alpha: 0.22),
               width: isSelected ? 2.5 : 1.5),
           boxShadow: isSelected
-              ? [BoxShadow(color: _config.primary.withValues(alpha: 0.35), blurRadius: 18, spreadRadius: 1)]
+              ? [BoxShadow(color: _config.primary.withValues(alpha: 0.35),
+              blurRadius: 18, spreadRadius: 1)]
               : [],
         ),
         child: Row(children: [
@@ -695,24 +842,29 @@ class _ScreenQuizState extends State<ScreenQuiz>
             margin: const EdgeInsets.only(right: 12),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isSelected ? _config.primary.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.08),
-              border: Border.all(color: isSelected ? _config.primary : Colors.white38, width: 2),
+              color: isSelected
+                  ? _config.primary.withValues(alpha: 0.35)
+                  : Colors.white.withValues(alpha: 0.08),
+              border: Border.all(
+                  color: isSelected ? _config.primary : Colors.white38, width: 2),
             ),
             child: Center(child: Text(answer.letter,
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
                     color: isSelected ? _config.primary : Colors.white60))),
           ),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(answer.text, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
-                color: Colors.white, height: 1.4)),
-            // Profil visible si sélectionné — masqué au N1
-            if (isSelected && _currentLevel > 1)
-              Padding(padding: const EdgeInsets.only(top: 5),
-                  child: Text('→ ${answer.profil}',
-                      style: TextStyle(fontSize: 10, fontStyle: FontStyle.italic,
-                          color: _config.secondary.withValues(alpha: 0.85)))),
-          ])),
-          if (isSelected) Icon(Icons.check_circle_rounded, color: _config.primary, size: 22),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(answer.text, style: const TextStyle(fontSize: 13,
+                    fontWeight: FontWeight.bold, color: Colors.white, height: 1.4)),
+                // Profil affiché si sélectionné (masqué en N1)
+                if (isSelected && _currentLevel > 1)
+                  Padding(padding: const EdgeInsets.only(top: 5),
+                    child: Text('→ ${answer.profil}',
+                        style: TextStyle(fontSize: 10, fontStyle: FontStyle.italic,
+                            color: _config.secondary.withValues(alpha: 0.85)))),
+              ])),
+          if (isSelected)
+            Icon(Icons.check_circle_rounded, color: _config.primary, size: 22),
         ]),
       ),
     );
@@ -724,8 +876,8 @@ class _ScreenQuizState extends State<ScreenQuiz>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text('MEWO QUIZ ARENA', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold,
-              color: _config.primary, letterSpacing: 2)),
+          Text('MEWO QUIZ ARENA', style: TextStyle(fontSize: 9,
+              fontWeight: FontWeight.bold, color: _config.primary, letterSpacing: 2)),
           Text('$_totalAnswered / $_totalQuestions',
               style: const TextStyle(fontSize: 10, color: Colors.white54)),
         ]),
@@ -743,13 +895,12 @@ class _ScreenQuizState extends State<ScreenQuiz>
 }
 
 // ============================================================
-// ── Widgets utilitaires (inchangés) ─────────────────────────
+// ── Widgets utilitaires ───────────────────────────────────────
 
 class _LevelBadge extends StatelessWidget {
   final _LevelConfig config;
   final int questionIndex;
   const _LevelBadge({required this.config, required this.questionIndex});
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -777,28 +928,26 @@ class _TapToContinueState extends State<_TapToContinue>
     with SingleTickerProviderStateMixin {
   late AnimationController _blink;
   late Animation<double> _opacity;
-
   @override
   void initState() {
     super.initState();
-    _blink = AnimationController(vsync: this, duration: const Duration(milliseconds: 800))
-      ..repeat(reverse: true);
+    _blink = AnimationController(vsync: this,
+        duration: const Duration(milliseconds: 800))..repeat(reverse: true);
     _opacity = Tween<double>(begin: 0.3, end: 1.0).animate(_blink);
   }
-
   @override
   void dispose() { _blink.dispose(); super.dispose(); }
-
   @override
   Widget build(BuildContext context) {
     return FadeTransition(opacity: _opacity,
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(Icons.touch_app, color: widget.color.withValues(alpha: 0.7), size: 16),
+        Icon(Icons.touch_app,
+            color: widget.color.withValues(alpha: 0.7), size: 16),
         const SizedBox(width: 6),
         Text('Appuyez pour continuer',
-            style: TextStyle(color: widget.color.withValues(alpha: 0.7), fontSize: 13, letterSpacing: 1.5)),
-      ]),
-    );
+            style: TextStyle(color: widget.color.withValues(alpha: 0.7),
+                fontSize: 13, letterSpacing: 1.5)),
+      ]));
   }
 }
 
@@ -815,21 +964,18 @@ class _ReactionOverlayState extends State<_ReactionOverlay>
   late AnimationController _ctrl;
   late Animation<double> _scaleAnim;
   late Animation<double> _floatAnim;
-
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))
-      ..repeat(reverse: true);
+    _ctrl = AnimationController(vsync: this,
+        duration: const Duration(milliseconds: 2000))..repeat(reverse: true);
     _scaleAnim = Tween<double>(begin: 0.9, end: 1.1)
         .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
     _floatAnim = Tween<double>(begin: -3, end: 3)
         .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
-
   @override
   void dispose() { _ctrl.dispose(); super.dispose(); }
-
   String get _emoji {
     switch (widget.mood) {
       case CharacterMood.confused:   return '❓';
@@ -843,7 +989,6 @@ class _ReactionOverlayState extends State<_ReactionOverlay>
       case CharacterMood.suspicious: return '🕵️';
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(animation: _ctrl,
@@ -854,7 +999,8 @@ class _ReactionOverlayState extends State<_ReactionOverlay>
             decoration: BoxDecoration(shape: BoxShape.circle,
               color: widget.color.withValues(alpha: 0.15),
               border: Border.all(color: widget.color.withValues(alpha: 0.5), width: 1),
-              boxShadow: [BoxShadow(color: widget.color.withValues(alpha: 0.25), blurRadius: 8)],
+              boxShadow: [BoxShadow(
+                  color: widget.color.withValues(alpha: 0.25), blurRadius: 8)],
             ),
             child: Text(_emoji, style: const TextStyle(fontSize: 18)),
           ))));
