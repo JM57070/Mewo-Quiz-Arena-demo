@@ -1,3 +1,5 @@
+import 'answer_record.dart';
+
 // ============================================================
 // models/quiz_question.dart — ENTONNOIR FULL DYNAMIQUE v4
 // ============================================================
@@ -26,8 +28,6 @@
 //    getQuestionsNiveau3(pole, groupe) → List<QuizQuestion>
 //
 // ============================================================
-
-import '../models/answer_record.dart';
 
 class QuizQuestion {
   final int numero;
@@ -75,25 +75,25 @@ const List<QuizQuestion> questionsNiveau1 = [
     reponses: [
       QuizAnswer(
         letter: 'A',
-        text: 'Mr. Robot, Black Mirror, Silicon Valley\n→ hackers, IA, technologie 🖥️',
+        text: 'Mr. Robot, Black Mirror, Silicon Valley',
         profil: 'Informatique', pole: 'info',
         tags: ['tech', 'logique', 'numerique'],
       ),
       QuizAnswer(
         letter: 'B',
-        text: 'Grey\'s Anatomy, Urgences, Scrubs\n→ médecine, soins, urgences 🏥',
+        text: 'Grey\'s Anatomy, Urgences, Scrubs',
         profil: 'Santé', pole: 'sante',
         tags: ['soin', 'medical', 'empathie'],
       ),
       QuizAnswer(
         letter: 'C',
-        text: 'Suits, How to Get Away with Murder\n→ justice, droit, plaidoiries ⚖️',
+        text: 'Suits, How to Get Away with Murder',
         profil: 'Juridique', pole: 'juridique',
         tags: ['droit', 'regles', 'defense'],
       ),
       QuizAnswer(
         letter: 'D',
-        text: 'Call the Midwife, Instinct Animal, Super Nanny\n→ enfants, animaux, familles 😄',
+        text: 'Call the Midwife, Instinct Animal, Super Nanny',
         profil: 'Service / Animal', pole: 'service',
         tags: ['humain', 'enfance', 'animal', 'relation'],
       ),
@@ -134,64 +134,64 @@ const List<QuizQuestion> questionsNiveau1 = [
 
   QuizQuestion(
     numero: 3,
-    question: 'Tu vois quelqu\'un tomber et saigner abondamment. Ton réflexe ?',
-    detecte: 'confort face au milieu médical — clé pôle Santé',
+    question: 'Tu vois quelqu\'un s\'effondrer dans la rue. Ton premier mouvement ?',
+    detecte: 'réflexe instinctif face à une urgence — clé pôle Santé',
     reponses: [
       QuizAnswer(
         letter: 'A',
-        text: 'Tu t\'approches et appliques les gestes de premiers secours\n→ le sang ne te dérange pas 🩹',
+        text: 'Tu t\'agenouilles directement et tu fais ce que tu peux avec tes mains\n— le reste, on verra après',
         profil: 'Santé', pole: 'sante',
-        tags: ['soin', 'medical', 'urgence'],
+        tags: ['soin', 'contact', 'direct', 'terrain'],
       ),
       QuizAnswer(
         letter: 'B',
-        text: 'Tu appelles le 15 et guides à voix haute depuis une certaine distance\n→ efficace sans contact direct',
+        text: 'Tu prends du recul une seconde, tu évalues la situation\net tu donnes des instructions claires aux gens autour',
         profil: 'Informatique', pole: 'info',
-        tags: ['distance', 'tech', 'organisation'],
+        tags: ['analyse', 'organisation', 'coordination', 'methode'],
       ),
       QuizAnswer(
         letter: 'C',
-        text: 'Tu organises les témoins autour et coordonnes l\'intervention\n→ tu gères sans contact direct',
+        text: 'Tu identifies qui fait quoi, tu notes les éléments importants\net tu t\'assures que rien ne soit oublié',
         profil: 'Juridique', pole: 'juridique',
-        tags: ['coordination', 'gestion', 'organisation'],
+        tags: ['observation', 'documentation', 'ordre', 'rigueur'],
       ),
       QuizAnswer(
         letter: 'D',
-        text: 'Tu restes pour soutenir émotionnellement en attendant les secours\n→ le sang te met mal à l\'aise mais tu ne pars pas',
+        text: 'Tu prends la main de la personne et tu restes là, calme,\nsans la lâcher — les autres s\'occupent du reste',
         profil: 'Service / Animal', pole: 'service',
-        tags: ['soutien', 'emotion', 'presence'],
+        tags: ['presence', 'soutien', 'emotion', 'contact-humain'],
       ),
     ],
   ),
 
   QuizQuestion(
     numero: 4,
-    question: 'Tu vois quelqu\'un se faire traiter injustement devant toi. Ta réaction ?',
-    detecte: 'attrait pour la défense et le droit — clé pôle Juridique',
+    question: 'Tu regardes un jeu télévisé. Un candidat est éliminé\nà cause d\'une règle que personne ne lui avait expliquée. Ta réaction ?',
+    detecte: 'réaction face à l\'injustice de procédure — clé pôle Juridique',
     reponses: [
       QuizAnswer(
         letter: 'A',
-        text: 'Tu cites le règlement ou la loi — les droits de cette personne doivent être respectés ⚖️',
+        text: 'Tu trouves ça inadmissible — les règles doivent être\nclaires et connues de tous avant de commencer',
         profil: 'Juridique', pole: 'juridique',
-        tags: ['droit', 'defense', 'regles'],
+        tags: ['regles', 'equite', 'cadre', 'droit'],
       ),
       QuizAnswer(
         letter: 'B',
-        text: 'Tu prends la parole directement pour défendre la personne, sans attendre',
-        profil: 'Juridique / Service', pole: 'juridique',
-        tags: ['defense', 'expression', 'courage'],
+        text: 'Tu ressens surtout de la peine pour lui\n— il s\'était tellement investi, c\'est cruel',
+        profil: 'Santé / Service', pole: 'sante',
+        tags: ['empathie', 'soutien', 'emotion', 'bienveillance'],
       ),
       QuizAnswer(
         letter: 'C',
-        text: 'Tu cherches une solution pratique ou technique pour régler le problème',
+        text: 'Tu te demandes comment le format du jeu pourrait être\nmieux conçu pour que ce genre de situation n\'arrive plus',
         profil: 'Informatique', pole: 'info',
-        tags: ['resolution', 'pratique', 'tech'],
+        tags: ['systeme', 'conception', 'amelioration', 'methode'],
       ),
       QuizAnswer(
         letter: 'D',
-        text: 'Tu restes aux côtés de la personne pour la soutenir émotionnellement',
-        profil: 'Santé / Service', pole: 'sante',
-        tags: ['empathie', 'soutien', 'presence'],
+        text: 'Tu t\'inquiètes surtout pour son état après le choc\n— ce genre d\'élimination peut vraiment déstabiliser quelqu\'un',
+        profil: 'Service / Animal', pole: 'service',
+        tags: ['attention', 'soin', 'presence', 'humain'],
       ),
     ],
   ),
@@ -203,25 +203,25 @@ const List<QuizQuestion> questionsNiveau1 = [
     reponses: [
       QuizAnswer(
         letter: 'A',
-        text: 'Un labo tech avec plusieurs écrans, du matériel, des lignes de code 🖥️',
+        text: 'Un labo tech avec plusieurs écrans, du matériel, des lignes de code',
         profil: 'Informatique', pole: 'info',
         tags: ['tech', 'numerique', 'outil'],
       ),
       QuizAnswer(
         letter: 'B',
-        text: 'Une clinique, un cabinet ou une salle de soin — calme et bienveillant 🏥',
+        text: 'Une clinique, un cabinet ou une salle de soin — calme et bienveillant',
         profil: 'Santé / Animal', pole: 'sante',
         tags: ['soin', 'medical', 'vivant'],
       ),
       QuizAnswer(
         letter: 'C',
-        text: 'Un open space vivant — familles, enfants, gens à aider au quotidien 👥',
+        text: 'Un open space vivant — familles, enfants, gens à aider au quotidien',
         profil: 'Service', pole: 'service',
         tags: ['relation', 'humain', 'animation'],
       ),
       QuizAnswer(
         letter: 'D',
-        text: 'Un bureau sobre et ordonné, des dossiers, des règles claires 📋',
+        text: 'Un bureau sobre et ordonné, des dossiers, des règles claires',
         profil: 'Juridique', pole: 'juridique',
         tags: ['rigueur', 'organisation', 'droit'],
       ),
@@ -243,45 +243,46 @@ const List<QuizQuestion> questionsNiveau2Info = [
   QuizQuestion(
     numero: 6,
     synopsis:
-        'Tu démarres un stage dans une entreprise tech.\n'
-        'Le responsable IT t\'accueille et t\'explique :\n'
-        '"Deux équipes coexistent ici. L\'une gère l\'infrastructure\n'
-        'et la sécurité. L\'autre conçoit et développe nos applications.\n'
-        'Tu as une journée pour explorer. Lequel t\'attire ?"',
-    question: 'Le chef te propose deux missions pour la matinée. Tu choisis…',
+        'Premier jour de stage dans une boîte tech.\n'
+        'Le responsable IT t\'accueille et te dit :\n'
+        '"On a deux équipes qui vivent dans des mondes très différents.\n'
+        'L\'une s\'assure que tout tourne — sans accroc, 24h/24.\n'
+        'L\'autre construit les outils que les salariés ouvrent chaque matin.\n'
+        'Tu as la journée pour observer. Par laquelle tu commences ?"',
+    question: 'Tu choisis d\'aller voir…',
     detecte: 'préférence opérationnelle IT — infra/réseau vs dev/conception',
     reponses: [
       QuizAnswer(
         letter: 'A',
-        text: 'Configurer et sécuriser les accès réseau du nouveau serveur',
+        text: 'L\'équipe qui veille à ce que rien ne s\'effondre\n— les serveurs, les connexions, ce qui tient tout en place',
         profil: 'Technicien Infra & Sécurité',
-        tags: ['reseau', 'securite', 'infra', 'terrain'],
+        tags: ['infra', 'stabilite', 'reseau', 'terrain'],
       ),
       QuizAnswer(
         letter: 'B',
-        text: 'Développer une nouvelle fonctionnalité pour l\'application interne',
+        text: 'L\'équipe qui fabrique et améliore les outils\n— ce que tout le monde utilise pour faire son travail',
         profil: 'Développeur / Concepteur logiciel',
-        tags: ['dev', 'code', 'application', 'conception'],
+        tags: ['dev', 'creation', 'usagers', 'produit'],
       ),
     ],
   ),
   QuizQuestion(
     numero: 7,
     synopsis: null,
-    question: 'L\'équipe signale que le système ralentit. Tu proposes de…',
-    detecte: 'approche résolution de problème IT',
+    question: 'L\'appli interne rame depuis ce matin, tout le monde se plaint.\nOn te demande de regarder. Ton réflexe, c\'est de commencer par…',
+    detecte: 'instinct de diagnostic IT — infra vs code',
     reponses: [
       QuizAnswer(
         letter: 'A',
-        text: 'Analyser les logs réseau et optimiser la configuration des équipements',
+        text: 'Regarder du côté des machines et des connexions\n— si la tuyauterie est bouchée, l\'eau ne coule plus',
         profil: 'Technicien Infrastructure',
-        tags: ['logs', 'reseau', 'equipement', 'diagnostic'],
+        tags: ['infra', 'diagnostic', 'equipement', 'reseau'],
       ),
       QuizAnswer(
         letter: 'B',
-        text: 'Revoir le code et optimiser les requêtes de la base de données',
+        text: 'Ouvrir ce que l\'appli fait dans les coulisses\n— quelque chose dans sa logique interne fait probablement ramer',
         profil: 'Développeur / DBA',
-        tags: ['code', 'bdd', 'optimisation', 'logiciel'],
+        tags: ['code', 'logiciel', 'optimisation', 'debug'],
       ),
     ],
   ),

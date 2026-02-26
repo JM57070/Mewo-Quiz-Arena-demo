@@ -654,35 +654,38 @@ class _ScreenQuizState extends State<ScreenQuiz>
   }
 
   Widget _buildSynopsisCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.white.withValues(alpha: 0.07),
-        border: Border.all(color: _config.primary.withValues(alpha: 0.4), width: 1.5),
-        boxShadow: [BoxShadow(
-            color: _config.primary.withValues(alpha: 0.15), blurRadius: 20)],
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Icon(Icons.auto_stories_rounded, color: _config.secondary, size: 16),
-          const SizedBox(width: 6),
-          Text('HISTOIRE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold,
-              color: _config.secondary, letterSpacing: 2.5)),
-        ]),
-        Container(margin: const EdgeInsets.symmetric(vertical: 10), height: 1,
-            color: _config.primary.withValues(alpha: 0.22)),
-        Expanded(child: SingleChildScrollView(child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, children: [
+    return Center(
+      child: Container(
+        // Taille adaptée au contenu — plus de width:double.infinity
+        constraints: const BoxConstraints(maxWidth: 520),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white.withValues(alpha: 0.07),
+          border: Border.all(color: _config.primary.withValues(alpha: 0.4), width: 1.5),
+          boxShadow: [BoxShadow(
+              color: _config.primary.withValues(alpha: 0.15), blurRadius: 20)],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // ← la box colle au texte
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Icon(Icons.auto_stories_rounded, color: _config.secondary, size: 16),
+              const SizedBox(width: 6),
+              Text('HISTOIRE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold,
+                  color: _config.secondary, letterSpacing: 2.5)),
+            ]),
+            Container(margin: const EdgeInsets.symmetric(vertical: 10), height: 1,
+                color: _config.primary.withValues(alpha: 0.22)),
             Text(_displayedText,
                 style: const TextStyle(
                     fontSize: 13.5, color: Colors.white, height: 1.85)),
             if (_isTyping)
               Text('▌', style: TextStyle(color: _config.secondary, fontSize: 15)),
           ],
-        ))),
-      ]),
+        ),
+      ),
     );
   }
 
@@ -748,12 +751,10 @@ class _ScreenQuizState extends State<ScreenQuiz>
             ? _buildAnswersGrid(question)
             : _buildAnswersList(question),
       )),
+      // Logo MEWO en pulsation — remplace l'affichage "Détecte"
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Text('Détecte : ${question.detecte}',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-                fontSize: 10, fontStyle: FontStyle.italic, color: Colors.white38)),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Center(child: _PulsingLogo(color: _config.primary)),
       ),
       Padding(
         padding: const EdgeInsets.only(right: 16, bottom: 14, top: 8),
@@ -856,12 +857,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
               children: [
                 Text(answer.text, style: const TextStyle(fontSize: 13,
                     fontWeight: FontWeight.bold, color: Colors.white, height: 1.4)),
-                // Profil affiché si sélectionné (masqué en N1)
-                if (isSelected && _currentLevel > 1)
-                  Padding(padding: const EdgeInsets.only(top: 5),
-                    child: Text('→ ${answer.profil}',
-                        style: TextStyle(fontSize: 10, fontStyle: FontStyle.italic,
-                            color: _config.secondary.withValues(alpha: 0.85)))),
+                // Profil intentionnellement masqué côté UI (conservé pour le calcul)
               ])),
           if (isSelected)
             Icon(Icons.check_circle_rounded, color: _config.primary, size: 22),
@@ -1004,5 +1000,59 @@ class _ReactionOverlayState extends State<_ReactionOverlay>
             ),
             child: Text(_emoji, style: const TextStyle(fontSize: 18)),
           ))));
+  }
+}
+
+// ── Logo MEWO en pulsation — remplace "Détecte" ──────────────
+class _PulsingLogo extends StatefulWidget {
+  final Color color;
+  const _PulsingLogo({required this.color});
+  @override
+  State<_PulsingLogo> createState() => _PulsingLogoState();
+}
+
+class _PulsingLogoState extends State<_PulsingLogo>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _glow;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1600))
+      ..repeat(reverse: true);
+    _glow = Tween<double>(begin: 0.3, end: 1.0)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() { _ctrl.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, __) => Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: widget.color.withValues(alpha: _glow.value * 0.45),
+              blurRadius: 16,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Opacity(
+          opacity: 0.55 + _glow.value * 0.45,
+          child: Image.asset(
+            'assets/images/logo_mewo.png',
+            height: 28,
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
+    );
   }
 }
