@@ -62,8 +62,8 @@ const _LevelConfig _configN1 = _LevelConfig(
   levelName: 'NIVEAU 1',
   subtitle: 'DÉCOUVERTE',
   introText:
-      'Cinq questions rapides et fun.\n'
-      'Réponds à l\'instinct — il n\'y a pas de bonne ou mauvaise réponse.',
+      'Vingt questions rapides et fun.\n'
+      'Il n\'y a pas de bonne ou mauvaise réponse.',
   primary: Color(0xFF00BCD4),
   secondary: Color(0xFF80DEEA),
 );
@@ -753,17 +753,17 @@ class _ScreenQuizState extends State<ScreenQuiz>
       )),
       // Logo MEWO en pulsation — remplace l'affichage "Détecte"
       Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 15),
         child: Center(child: _PulsingLogo(color: _config.primary)),
       ),
       Padding(
-        padding: const EdgeInsets.only(right: 16, bottom: 14, top: 8),
+        padding: const EdgeInsets.only(right: 16, bottom: 22, top: 8),
         child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
           GestureDetector(
             onTap: _goNext,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 250),
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 25),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
