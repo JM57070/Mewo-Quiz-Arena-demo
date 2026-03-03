@@ -124,7 +124,7 @@ class _Screen1WelcomeState extends State<Screen1Welcome>
                   FadeTransition(
                     opacity: _fadeInAnim,
                     child: const Text(
-                      '15 questions  •  3 niveaux',
+                      '16 questions  •  3 niveaux',
                       style: TextStyle(fontSize: 13, color: Colors.white60, letterSpacing: 2),
                     ),
                   ),

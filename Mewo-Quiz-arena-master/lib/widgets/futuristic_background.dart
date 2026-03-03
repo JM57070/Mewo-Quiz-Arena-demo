@@ -274,6 +274,7 @@ class _ParticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (final p in _particles) {
+      
       // La particule remonte doucement, puis recommence en bas
       double y = (p.y - progress * p.speed + p.phase) % 1.0;
       double x = p.x + 0.03 * math.sin(progress * 2 * math.pi + p.phase * 10);

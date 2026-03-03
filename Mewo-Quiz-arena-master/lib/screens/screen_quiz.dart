@@ -62,7 +62,7 @@ const _LevelConfig _configN1 = _LevelConfig(
   levelName: 'NIVEAU 1',
   subtitle: 'DÉCOUVERTE',
   introText:
-      'Vingt questions rapides et fun.\n'
+      'Seize questions rapides et fun.\n'
       'Il n\'y a pas de bonne ou mauvaise réponse.',
   primary: Color(0xFF00BCD4),
   secondary: Color(0xFF80DEEA),
@@ -77,10 +77,10 @@ _LevelConfig _getN2Config(String pole) {
         subtitle: 'INFORMATIQUE',
         introText:
             'Ton pôle : l\'informatique. 💻\n'
-            'Deux grandes voies s\'ouvrent dans ce domaine :\n'
-            'l\'infrastructure, les réseaux et la sécurité —\n'
+            'Deux voies s\'ouvrent dans ce domaine :\n'
+            'l\'infrastructure, les réseaux et la sécurité \n'
             'ou le développement logiciel et la conception.\n'
-            'Ces cinq questions vont affiner ta direction.',
+            'Ces quatre questions vont affiner ta direction.',
         primary: Color(0xFF0097A7),
         secondary: Color(0xFF80DEEA),
       );
@@ -91,7 +91,7 @@ _LevelConfig _getN2Config(String pole) {
         introText:
             'Ton pôle : la santé et le soin. 🏥\n'
             'Deux directions se dessinent :\n'
-            'le contact direct avec les patients au quotidien —\n'
+            'le contact direct avec les patients au quotidien \n'
             'ou l\'expertise médicale en consultation spécialisée.\n'
             'Ces cinq questions vont préciser ta vocation.',
         primary: Color(0xFFC2185B),
@@ -102,9 +102,9 @@ _LevelConfig _getN2Config(String pole) {
         levelName: 'NIVEAU 2',
         subtitle: 'ANIMAL',
         introText:
-            'Ton pôle : le monde animal. 🐾\n'
+            'Ton pôle : le monde animal. 🐕‍🦺\n'
             'Deux rôles distincts t\'attendent :\n'
-            'les soins cliniques en cabinet vétérinaire —\n'
+            'les soins cliniques en cabinet vétérinaire \n'
             'ou la gestion et le management en structure animalière.\n'
             'Ces cinq questions vont identifier le tien.',
         primary: Color(0xFF33691E),
@@ -292,7 +292,7 @@ class _ScreenQuizState extends State<ScreenQuiz>
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
 
-  static const int _totalQuestions = 15;
+  static const int _totalQuestions = 16;
   int get _totalAnswered => _allAnswers.length;
 
   // ── Questions du niveau courant ──────────────────────────
